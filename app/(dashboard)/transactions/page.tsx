@@ -18,6 +18,8 @@ export default async function Transactions({
   return (
     <div>
       <h1 className="text-3xl font-black">Giao dịch</h1>
+      <p className="mt-1 text-slate-500">Thêm chi tiêu nhanh và xem lại lịch sử giao dịch trên mọi kích thước màn hình.</p>
+
       {searchParams.error && (
         <div className="mt-4 rounded-xl bg-red-50 p-3 text-red-700">{searchParams.error}</div>
       )}
@@ -26,7 +28,7 @@ export default async function Transactions({
       )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <form action={addExpense} className="card p-6">
+        <form action={addExpense} className="card p-6 lg:sticky lg:top-8 lg:self-start">
           <input type="hidden" name="return_to" value="/transactions" />
           <h2 className="font-black">Thêm khoản chi</h2>
           <select name="bucket_id" required className="input mt-4">
@@ -45,27 +47,60 @@ export default async function Transactions({
 
         <div className="card p-6 lg:col-span-2">
           <h2 className="font-black">Lịch sử gần đây</h2>
-          <div className="mt-4 overflow-hidden rounded-2xl border">
-            <table className="w-full text-left text-sm">
+
+          <div className="mt-4 space-y-3 md:hidden">
+            {transactions.map((transaction: any) => (
+              <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4" key={transaction.id}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      {new Date(transaction.occurred_at).toLocaleDateString('vi-VN')}
+                    </p>
+                    <b className="mt-1 block break-words text-base">{transaction.category || 'Chưa phân loại'}</b>
+                  </div>
+                  <b className="shrink-0 text-right">{formatMoney(transaction.amount)}</b>
+                </div>
+
+                <div className="mt-3 grid gap-2 text-sm text-slate-600">
+                  <p>
+                    <span className="font-semibold text-slate-900">Hũ:</span> {transaction.buckets?.name}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-slate-900">Loại:</span> {transaction.type}
+                  </p>
+                  {transaction.note && (
+                    <p>
+                      <span className="font-semibold text-slate-900">Ghi chú:</span> {transaction.note}
+                    </p>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-4 hidden overflow-x-auto rounded-2xl border md:block">
+            <table className="min-w-[640px] w-full text-left text-sm">
               <thead className="bg-slate-50">
                 <tr>
                   <th className="p-3">Ngày</th>
-                  <th>Hũ</th>
-                  <th>Loại</th>
-                  <th>Danh mục</th>
+                  <th className="px-3">Hũ</th>
+                  <th className="px-3">Loại</th>
+                  <th className="px-3">Danh mục</th>
                   <th className="pr-3 text-right">Số tiền</th>
                 </tr>
               </thead>
               <tbody>
                 {transactions.map((transaction: any) => (
                   <tr className="border-t" key={transaction.id}>
-                    <td className="p-3">
+                    <td className="whitespace-nowrap p-3">
                       {new Date(transaction.occurred_at).toLocaleDateString('vi-VN')}
                     </td>
-                    <td>{transaction.buckets?.name}</td>
-                    <td>{transaction.type}</td>
-                    <td>{transaction.category}</td>
-                    <td className="pr-3 text-right font-bold">{formatMoney(transaction.amount)}</td>
+                    <td className="px-3">{transaction.buckets?.name}</td>
+                    <td className="px-3">{transaction.type}</td>
+                    <td className="px-3">{transaction.category}</td>
+                    <td className="whitespace-nowrap pr-3 text-right font-bold">
+                      {formatMoney(transaction.amount)}
+                    </td>
                   </tr>
                 ))}
               </tbody>

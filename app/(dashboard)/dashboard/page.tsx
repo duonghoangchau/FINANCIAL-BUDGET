@@ -50,7 +50,7 @@ export default async function Dashboard({
 
   return (
     <div>
-      <h1 className="text-3xl font-black">Dashboard tháng {month}/{year}</h1>
+      <h1 className="text-2xl font-black sm:text-3xl">Dashboard tháng {month}/{year}</h1>
       <p className="mt-1 text-slate-500">Tổng quan dòng tiền, hũ tài chính và hạn mức hôm nay.</p>
 
       {searchParams.error && (
@@ -60,7 +60,7 @@ export default async function Dashboard({
         <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-emerald-700">{successMessage}</div>
       )}
 
-      <section className="mt-6 grid gap-4 md:grid-cols-4">
+      <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           ['Thu nhập', income],
           ['Đã phân bổ', allocated],
@@ -101,7 +101,7 @@ export default async function Dashboard({
             <input name="note" className="input" placeholder="Ghi chú" />
             <input name="occurred_at" type="datetime-local" className="input md:col-span-2" />
           </div>
-          <button className="btn btn-primary mt-4">Ghi chi tiêu</button>
+          <button className="btn btn-primary mt-4 w-full md:w-auto">Ghi chi tiêu</button>
         </form>
       </div>
 
@@ -111,9 +111,9 @@ export default async function Dashboard({
           <div className="mt-4 space-y-4">
             {buckets.map((bucket: any) => (
               <div key={bucket.id}>
-                <div className="flex justify-between text-sm">
-                  <b>{bucket.name}</b>
-                  <span>
+                <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-start sm:justify-between">
+                  <b className="min-w-0 break-words">{bucket.name}</b>
+                  <span className="break-words text-slate-600 sm:text-right">
                     {formatMoney(bucket.current_balance)} / {formatMoney(bucket.target_amount || bucket.allocated_amount)}
                   </span>
                 </div>
@@ -160,11 +160,14 @@ export default async function Dashboard({
           <h3 className="mt-6 font-bold">Giao dịch gần đây</h3>
           <div className="mt-3 space-y-2">
             {transactions.slice(0, 5).map((transaction: any) => (
-              <div className="flex justify-between rounded-xl bg-slate-50 p-3 text-sm" key={transaction.id}>
-                <span>
+              <div
+                className="flex flex-col gap-2 rounded-xl bg-slate-50 p-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+                key={transaction.id}
+              >
+                <span className="min-w-0 break-words">
                   {transaction.category} · {transaction.buckets?.name}
                 </span>
-                <b>{formatMoney(transaction.amount)}</b>
+                <b className="shrink-0">{formatMoney(transaction.amount)}</b>
               </div>
             ))}
           </div>

@@ -42,7 +42,7 @@ export default async function Buckets({
     <div>
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-3xl font-black">Hũ tài chính</h1>
+          <h1 className="text-2xl font-black sm:text-3xl">Hũ tài chính</h1>
           <p className="mt-1 text-slate-500">
             Quản lý nhanh hũ, ưu tiên thao tác chuyển tiền và chỉ mở phần chỉnh sửa khi cần.
           </p>
@@ -137,7 +137,7 @@ export default async function Buckets({
               placeholder="Tên hũ: Chi tiêu tháng, Du lịch..."
             />
             <input name="description" className="input" placeholder="Mô tả ngắn" />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <MoneyInput
                 name="allocated_amount"
                 className="input"
@@ -154,7 +154,7 @@ export default async function Buckets({
               className="input"
               placeholder="Mục tiêu"
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <input name="color" type="color" className="input h-12" defaultValue="#16a34a" />
               <select name="calculation_mode" className="input">
                 <option value="end_of_day">Cuối ngày</option>
@@ -172,7 +172,7 @@ export default async function Buckets({
         </form>
 
         <div>
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="font-black">Danh sách hũ</h2>
             <p className="text-sm text-slate-500">Bấm “Mở chỉnh sửa” khi cần thay đổi chi tiết.</p>
           </div>
@@ -208,7 +208,7 @@ export default async function Buckets({
                     </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                     <div className="rounded-2xl bg-slate-50 p-3">
                       <p className="text-slate-500">Số dư</p>
                       <b className="mt-1 block text-base text-slate-900">
@@ -290,7 +290,7 @@ export default async function Buckets({
                             defaultValue={Number(bucket.target_amount || 0)}
                             placeholder="Mục tiêu"
                           />
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid gap-3 sm:grid-cols-2">
                             <input
                               name="color"
                               type="color"
