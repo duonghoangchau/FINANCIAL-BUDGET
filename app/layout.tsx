@@ -36,6 +36,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="vi">
       <body>
+        {process.env.NODE_ENV !== 'production' && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(() => {
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then((registrations) => {
+                    registrations.forEach((registration) => registration.unregister())
+                  })
+                }
+                if ('caches' in window) {
+                  caches.keys().then((keys) => {
+                    keys
+                      .filter((key) => key.startsWith('budgetflow-shell'))
+                      .forEach((key) => caches.delete(key))
+                  })
+                }
+              })();`,
+            }}
+          />
+        )}
         <PwaRegistrar />
         <Toaster richColors position="top-right" />
         {children}
