@@ -20,4 +20,8 @@ export async function middleware(request: NextRequest) {
   if ((request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register') && user) return NextResponse.redirect(new URL('/dashboard', request.url))
   return response
 }
-export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'] }
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|offline.html|apple-icon|icon|pwa-icon).*)',
+  ],
+}
