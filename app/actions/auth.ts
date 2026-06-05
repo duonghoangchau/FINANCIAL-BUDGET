@@ -1,5 +1,7 @@
 'use server'
-import { createClientServer, createAdminClient } from '@/lib/supabase'
+
+import { createClientServer } from '@/lib/supabase'
+import { ensureUserProfileAndDefaultBucket } from '@/lib/user-state'
 import { redirect } from 'next/navigation'
 
 export async function signUp(formData: FormData) {
@@ -7,6 +9,7 @@ export async function signUp(formData: FormData) {
   const fullName = String(formData.get('full_name') || '')
   const email = String(formData.get('email') || '')
   const password = String(formData.get('password') || '')
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -15,32 +18,17 @@ export async function signUp(formData: FormData) {
       emailRedirectTo: 'https://financial-budget-alpha.vercel.app/login',
     },
   })
-  if (error) redirect('/register?error=' + encodeURIComponent(error.message))
-  if (data.user) {
-    const admin = createAdminClient()
-    await admin.from('profiles').upsert({ id: data.user.id, full_name: fullName, email, currency: 'VND', timezone: 'Asia/Ho_Chi_Minh' })
-    const { data: defaultBucket } = await admin
-      .from('buckets')
-      .select('id')
-      .eq('user_id', data.user.id)
-      .eq('name', 'Chi tiêu tháng')
-      .maybeSingle()
 
-    if (!defaultBucket) {
-      await admin.from('buckets').insert({
-        user_id: data.user.id,
-        name: 'Chi tiêu tháng',
-        description: 'Hũ mặc định để theo dõi chi tiêu sinh hoạt theo ngày trong tháng.',
-        color: '#0f766e',
-        icon: 'Wallet',
-        allocated_amount: 0,
-        current_balance: 0,
-        target_amount: 0,
-        is_rollover: false,
-        calculation_mode: 'realtime',
-      })
-    }
+  if (error) redirect('/register?error=' + encodeURIComponent(error.message))
+
+  if (data.user) {
+    await ensureUserProfileAndDefaultBucket({
+      id: data.user.id,
+      email,
+      user_metadata: { full_name: fullName },
+    })
   }
+
   redirect('/dashboard')
 }
 

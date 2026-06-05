@@ -1,4 +1,5 @@
 import { createAdminClient, createClientServer } from '@/lib/supabase'
+import { assertNoQueryErrors, ensureUserProfileAndDefaultBucket } from '@/lib/user-state'
 import { monthRange, normalizeMonthYear, nowMonth } from '@/lib/utils'
 import { redirect } from 'next/navigation'
 
@@ -15,10 +16,11 @@ async function requireUser() {
 
 export async function getUserData() {
   const user = await requireUser()
+  await ensureUserProfileAndDefaultBucket(user)
   const admin = createAdminClient()
   const { month, year } = nowMonth()
 
-  const [{ data: profile }, { data: budget }, { data: buckets }, { data: transactions }] =
+  const [profileResult, budgetResult, bucketsResult, transactionsResult] =
     await Promise.all([
       admin.from('profiles').select('*').eq('id', user.id).maybeSingle(),
       admin
@@ -37,12 +39,22 @@ export async function getUserData() {
         .limit(50),
     ])
 
+  assertNoQueryErrors(
+    [profileResult, budgetResult, bucketsResult, transactionsResult],
+    [
+      'Unable to load profile',
+      'Unable to load monthly budget',
+      'Unable to load buckets',
+      'Unable to load transactions',
+    ],
+  )
+
   return {
     user,
-    profile,
-    budget,
-    buckets: buckets || [],
-    transactions: transactions || [],
+    profile: profileResult.data,
+    budget: budgetResult.data,
+    buckets: bucketsResult.data || [],
+    transactions: transactionsResult.data || [],
     month,
     year,
   }
@@ -50,11 +62,12 @@ export async function getUserData() {
 
 export async function getMonthDetailData(requestedMonth?: number, requestedYear?: number) {
   const user = await requireUser()
+  await ensureUserProfileAndDefaultBucket(user)
   const admin = createAdminClient()
   const { month, year } = normalizeMonthYear(requestedMonth, requestedYear)
   const { start, end } = monthRange(month, year)
 
-  const [{ data: profile }, { data: budget }, { data: buckets }, { data: transactions }] =
+  const [profileResult, budgetResult, bucketsResult, transactionsResult] =
     await Promise.all([
       admin.from('profiles').select('*').eq('id', user.id).maybeSingle(),
       admin
@@ -74,12 +87,22 @@ export async function getMonthDetailData(requestedMonth?: number, requestedYear?
         .order('occurred_at', { ascending: true }),
     ])
 
+  assertNoQueryErrors(
+    [profileResult, budgetResult, bucketsResult, transactionsResult],
+    [
+      'Unable to load profile',
+      'Unable to load monthly budget',
+      'Unable to load buckets',
+      'Unable to load monthly transactions',
+    ],
+  )
+
   return {
     user,
-    profile,
-    budget,
-    buckets: buckets || [],
-    transactions: transactions || [],
+    profile: profileResult.data,
+    budget: budgetResult.data,
+    buckets: bucketsResult.data || [],
+    transactions: transactionsResult.data || [],
     month,
     year,
   }
