@@ -15,7 +15,7 @@ export function AuthForm({
     <main className="grid min-h-screen place-items-center bg-slate-100 p-4 sm:p-6">
       <form action={action} className="card w-full max-w-md p-6 sm:p-8">
         <h1 className="text-3xl font-black">{isLogin ? 'Đăng nhập' : 'Tạo tài khoản'}</h1>
-        <p className="mt-2 text-slate-500">Dùng Supabase Auth thật, session lưu bằng cookie.</p>
+        {/* <p className="mt-2 text-slate-500">Dùng Supabase Auth thật, session lưu bằng cookie.</p> */}
 
         {error && <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
