@@ -1,8 +1,10 @@
 import { addExpense, saveMonthlyBudget } from '@/app/actions/budget'
+import { ImmediateRebalanceForecast } from '@/components/ImmediateRebalanceForecast'
 import { MoneyInput } from '@/components/MoneyInput'
 import { getUserData } from '@/lib/data'
 import {
   calculateDailyBucketBudget,
+  calculateFutureDailyBucketBudget,
   calculateRemainingTodayBudget,
   formatMoney,
   isMonthlySpendingBucket,
@@ -46,6 +48,12 @@ export default async function Dashboard({
     ? calculateDailyBucketBudget(openingBalanceToday, month, year)
     : 0
   const remainingToday = calculateRemainingTodayBudget(dayBudget, spentToday)
+  const futureDaysCount = monthlySpendingBucket
+    ? Math.max(0, new Date(year, month, 0).getDate() - new Date().getDate())
+    : 0
+  const forecastDailyBudget = monthlySpendingBucket
+    ? calculateFutureDailyBucketBudget(Number(monthlySpendingBucket.current_balance || 0), month, year)
+    : 0
   const successMessage = searchParams.success ? successMessages[searchParams.success] : ''
 
   return (
@@ -114,7 +122,8 @@ export default async function Dashboard({
                 <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-start sm:justify-between">
                   <b className="min-w-0 break-words">{bucket.name}</b>
                   <span className="break-words text-slate-600 sm:text-right">
-                    {formatMoney(bucket.current_balance)} / {formatMoney(bucket.target_amount || bucket.allocated_amount)}
+                    {formatMoney(bucket.current_balance)} /{' '}
+                    {formatMoney(bucket.target_amount || bucket.allocated_amount)}
                   </span>
                 </div>
                 <div className="mt-2 h-3 rounded-full bg-slate-100">
@@ -156,6 +165,15 @@ export default async function Dashboard({
               <b className="mt-2 block text-xl text-emerald-900">{formatMoney(remainingToday)}</b>
             </div>
           </div>
+
+          {monthlySpendingBucket && (
+            <ImmediateRebalanceForecast
+              currentSafeBudget={dayBudget}
+              spentToday={spentToday}
+              forecastDailyBudget={forecastDailyBudget}
+              futureDaysCount={futureDaysCount}
+            />
+          )}
 
           <h3 className="mt-6 font-bold">Giao dịch gần đây</h3>
           <div className="mt-3 space-y-2">

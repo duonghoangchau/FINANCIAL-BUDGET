@@ -51,6 +51,32 @@ export const calculateDailyBucketBudget = (
   referenceDate = new Date(),
 ) => Math.max(0, balance) / remainingDaysInMonth(month, year, referenceDate)
 
+export const remainingFutureDaysInMonth = (
+  month: number,
+  year: number,
+  referenceDate = new Date(),
+) => {
+  const isCurrentMonth =
+    referenceDate.getMonth() + 1 === month && referenceDate.getFullYear() === year
+
+  if (!isCurrentMonth) return daysInMonth(month, year)
+
+  return Math.max(0, daysInMonth(month, year) - referenceDate.getDate())
+}
+
+export const calculateFutureDailyBucketBudget = (
+  balance: number,
+  month: number,
+  year: number,
+  referenceDate = new Date(),
+) => {
+  const futureDays = remainingFutureDaysInMonth(month, year, referenceDate)
+
+  if (!futureDays) return 0
+
+  return Math.max(0, balance) / futureDays
+}
+
 export const calculateRemainingTodayBudget = (safeBudget: number, spentToday: number) =>
   Math.max(0, safeBudget - spentToday)
 

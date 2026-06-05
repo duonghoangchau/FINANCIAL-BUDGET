@@ -1,7 +1,9 @@
 import Link from 'next/link'
+import { ImmediateRebalanceForecast } from '@/components/ImmediateRebalanceForecast'
 import { getMonthDetailData } from '@/lib/data'
 import {
   calculateDailyBucketBudget,
+  calculateFutureDailyBucketBudget,
   calculateRemainingTodayBudget,
   daysInMonth,
   formatMoney,
@@ -42,9 +44,7 @@ export default async function MonthDetails({
     0,
   )
   const monthlySpendingTransactions = monthlySpendingBucket
-    ? expenseTransactions.filter(
-        (transaction: any) => transaction.bucket_id === monthlySpendingBucket.id,
-      )
+    ? expenseTransactions.filter((transaction: any) => transaction.bucket_id === monthlySpendingBucket.id)
     : []
 
   const dailyMap = new Map<
@@ -64,8 +64,8 @@ export default async function MonthDetails({
 
     current.total += Number(transaction.amount || 0)
     current.count += 1
-    current.categories[transaction.category || 'Khác'] =
-      (current.categories[transaction.category || 'Khác'] || 0) + Number(transaction.amount || 0)
+    current.categories[transaction.category || 'Khac'] =
+      (current.categories[transaction.category || 'Khac'] || 0) + Number(transaction.amount || 0)
 
     if (transaction.buckets?.name && !current.bucketNames.includes(transaction.buckets.name)) {
       current.bucketNames.push(transaction.buckets.name)
@@ -99,6 +99,11 @@ export default async function MonthDetails({
   const remainingToday = isCurrentMonth
     ? calculateRemainingTodayBudget(currentSafeBudget, spentToday)
     : 0
+  const futureDaysCount = isCurrentMonth ? Math.max(0, totalDays - today.getDate()) : 0
+  const forecastDailyBudget =
+    monthlySpendingBucket && isCurrentMonth
+      ? calculateFutureDailyBucketBudget(Number(monthlySpendingBucket.current_balance || 0), month, year)
+      : 0
   const successMessages: Record<string, string> = {
     budget_saved: 'Đã lưu ngân sách tháng thành công.',
     expense_created: 'Đã ghi chi tiêu thành công.',
@@ -176,9 +181,7 @@ export default async function MonthDetails({
           <div className="bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.18),_transparent_58%)] p-5">
             <p className="text-sm font-semibold text-slate-600">Đã chi trong tháng</p>
             <b className="mt-2 block text-3xl tracking-tight text-slate-950">{formatMoney(totalSpent)}</b>
-            <p className="mt-2 text-sm text-slate-500">
-              {expenseTransactions.length} giao dịch đã ghi nhận
-            </p>
+            <p className="mt-2 text-sm text-slate-500">{expenseTransactions.length} giao dịch đã ghi nhận</p>
           </div>
         </div>
 
@@ -212,9 +215,7 @@ export default async function MonthDetails({
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="font-black">{monthLabel(month, year)}</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Ô đỏ nhạt là ngày chi cao hơn mức chuẩn/ngày.
-              </p>
+              <p className="mt-1 text-sm text-slate-500">Ô đỏ nhạt là ngày chi cao hơn mức chuẩn/ngày.</p>
             </div>
             <div className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600">
               {activeDays} ngày có phát sinh chi tiêu
@@ -310,8 +311,7 @@ export default async function MonthDetails({
               </div>
             ) : (
               <p className="mt-4 text-sm text-slate-500">
-                Chưa có hũ mặc định. Sau khi chạy lại `schema.sql`, tài khoản mới sẽ tự có hũ
-                `Chi tiêu tháng`.
+                Chưa có hũ mặc định. Sau khi chạy lại `schema.sql`, tài khoản mới sẽ tự có hũ `Chi tiêu tháng`.
               </p>
             )}
           </div>
@@ -319,20 +319,30 @@ export default async function MonthDetails({
           <div className="card p-6">
             <h2 className="font-black">Hôm nay còn bao nhiêu</h2>
             {isCurrentMonth ? (
-              <div className="mt-4 grid gap-3">
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-sm text-slate-500">Mức an toàn hôm nay</p>
-                  <b className="mt-2 block text-xl">{formatMoney(currentSafeBudget)}</b>
+              <>
+                <div className="mt-4 grid gap-3">
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-sm text-slate-500">Mức an toàn hôm nay</p>
+                    <b className="mt-2 block text-xl">{formatMoney(currentSafeBudget)}</b>
+                  </div>
+                  <div className="rounded-2xl bg-amber-50 p-4">
+                    <p className="text-sm text-amber-700">Đã chi hôm nay</p>
+                    <b className="mt-2 block text-xl text-amber-900">{formatMoney(spentToday)}</b>
+                  </div>
+                  <div className="rounded-2xl bg-emerald-50 p-4">
+                    <p className="text-sm text-emerald-700">Còn lại hôm nay</p>
+                    <b className="mt-2 block text-xl text-emerald-900">{formatMoney(remainingToday)}</b>
+                  </div>
                 </div>
-                <div className="rounded-2xl bg-amber-50 p-4">
-                  <p className="text-sm text-amber-700">Đã chi hôm nay</p>
-                  <b className="mt-2 block text-xl text-amber-900">{formatMoney(spentToday)}</b>
-                </div>
-                <div className="rounded-2xl bg-emerald-50 p-4">
-                  <p className="text-sm text-emerald-700">Còn lại hôm nay</p>
-                  <b className="mt-2 block text-xl text-emerald-900">{formatMoney(remainingToday)}</b>
-                </div>
-              </div>
+                {monthlySpendingBucket && (
+                  <ImmediateRebalanceForecast
+                    currentSafeBudget={currentSafeBudget}
+                    spentToday={spentToday}
+                    forecastDailyBudget={forecastDailyBudget}
+                    futureDaysCount={futureDaysCount}
+                  />
+                )}
+              </>
             ) : (
               <p className="mt-4 text-sm text-slate-500">
                 Chỉ số này chỉ hiển thị khi bạn đang xem tháng hiện tại, vì nó phụ thuộc vào giao dịch của ngày hôm nay.
